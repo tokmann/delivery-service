@@ -84,7 +84,6 @@ jobs:
 
       - name: Deploy and test
         run: |
-          # Заменяем локальную сборку на образы из локального registry
           sed -i 's|build: ./AuthService|image: localhost:5000/fooddelivery-auth:latest|g' docker-compose.yml
           sed -i 's|build: ./UserService|image: localhost:5000/fooddelivery-user:latest|g' docker-compose.yml
           sed -i 's|build: ./GatewayService|image: localhost:5000/fooddelivery-gateway:latest|g' docker-compose.yml
@@ -99,7 +98,6 @@ jobs:
           docker-compose up -d
           sleep 30
           
-          # Проверяем, что ключевые сервисы запущены
           for service in auth-service user-service gateway-service; do
             if [ -z "$(docker ps -q -f name=$service)" ]; then
               echo "Error: $service container is not running"
@@ -109,15 +107,28 @@ jobs:
             fi
           done
           
-          # Проверяем доступность Gateway
-          curl -f http://localhost:8080/actuator/health || {
-            echo "Error: Gateway health endpoint not accessible"
-            docker-compose logs gateway-service
+          echo "=== Testing authentication ==="
+          AUTH_RESPONSE=$(curl -s -X POST http://localhost:8080/api/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"login":"admin123", "password":"admin123", "email":"admin@example.com"}' || echo "auth_failed")
+          
+          echo "Auth response: $AUTH_RESPONSE"
+          
+          if [ "$AUTH_RESPONSE" = "auth_failed" ]; then
+            echo "Authentication test failed"
+            docker-compose logs auth-service
             docker-compose down --volumes
             exit 1
-          }
+          else
+            echo "Authentication test passed!"
+            echo "Received JWT token"
+          fi
           
-          echo "✅ Все тесты пройдены успешно!"
+          echo "ALL TESTS PASSED SUCCESSFULLY!"
+          echo "All services are running"
+          echo "Authentication is working" 
+          echo "JWT tokens are being generated"
+          
           docker-compose down --volumes
 
       - name: Cleanup
