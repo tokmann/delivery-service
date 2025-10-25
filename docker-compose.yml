@@ -94,9 +94,7 @@ services:
 
   # Auth Service
   auth-service:
-    build:
-      context: ./AuthService
-      dockerfile: Dockerfile
+    build: ./AuthService
     container_name: auth-service
     depends_on:
       - auth-db
@@ -113,9 +111,7 @@ services:
 
   # User Service
   user-service:
-    build:
-      context: ./UserService
-      dockerfile: Dockerfile
+    build: ./UserService
     container_name: user-service
     depends_on:
       - user-db
@@ -132,9 +128,7 @@ services:
 
   # Gateway Service
   gateway-service:
-    build:
-      context: ./GatewayService
-      dockerfile: Dockerfile
+    build: ./GatewayService
     container_name: gateway-service
     depends_on:
       - auth-service
@@ -149,9 +143,7 @@ services:
 
   # Restaurant Service
   restaurant-service:
-    build:
-      context: ./RestaurantService
-      dockerfile: Dockerfile
+    build: ./RestaurantService
     container_name: restaurant-service
     depends_on:
       - restaurant-db
@@ -168,9 +160,7 @@ services:
 
   # Catalog Service
   catalog-service:
-    build:
-      context: ./CatalogService
-      dockerfile: Dockerfile
+    build: ./CatalogService
     container_name: catalog-service
     depends_on:
       - catalog-db
@@ -189,9 +179,7 @@ services:
 
   # Order Service
   order-service:
-    build:
-      context: ./OrderService
-      dockerfile: Dockerfile
+    build: ./OrderService
     container_name: order-service
     depends_on:
       - order-db
@@ -212,9 +200,7 @@ services:
 
   # Courier Service
   courier-service:
-    build:
-      context: ./CourierService
-      dockerfile: Dockerfile
+    build: ./CourierService
     container_name: courier-service
     depends_on:
       - courier-db
