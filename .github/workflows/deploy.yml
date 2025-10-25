@@ -108,7 +108,7 @@ jobs:
           done
           
           echo "=== Testing authentication ==="
-          AUTH_RESPONSE=$(curl -s -X POST http://localhost:8080/api/auth/login \
+          AUTH_RESPONSE=$(curl -s -X POST http://localhost:8081/api/auth/login \
             -H "Content-Type: application/json" \
             -d '{"login":"admin123", "password":"admin123", "email":"admin@example.com"}' || echo "auth_failed")
           
