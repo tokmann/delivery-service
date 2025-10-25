@@ -97,6 +97,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install docker-compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+          docker-compose --version
+
       - name: Run deployment tests
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
