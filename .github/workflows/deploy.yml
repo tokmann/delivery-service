@@ -35,11 +35,6 @@ jobs:
           sudo apt-get install -y docker-compose
           docker-compose --version
 
-      - name: Start local Docker Registry
-        run: |
-          docker run -d -p 5000:5000 --name registry registry:2
-          sleep 5
-
       - name: Build and push auth-service
         run: |
           docker build -t localhost:5000/fooddelivery-auth:latest -f AuthService/Dockerfile ./AuthService
@@ -95,19 +90,16 @@ jobs:
 
       - name: Run deployment tests
         run: |
-          # Заменяем локальную сборку на образы из локального registry
           sed -i 's|build: ./AuthService|image: localhost:5000/fooddelivery-auth:latest|g' docker-compose.yml
           sed -i 's|build: ./UserService|image: localhost:5000/fooddelivery-user:latest|g' docker-compose.yml
           sed -i 's|build: ./GatewayService|image: localhost:5000/fooddelivery-gateway:latest|g' docker-compose.yml
           sed -i 's|build: ./RestaurantService|image: localhost:5000/fooddelivery-restaurant:latest|g' docker-compose.yml
           sed -i 's|build: ./CatalogService|image: localhost:5000/fooddelivery-catalog:latest|g' docker-compose.yml
           sed -i 's|build: ./OrderService|image: localhost:5000/fooddelivery-order:latest|g' docker-compose.yml
-          sed -i 's|build: ./CourierService|image: localhost:5000/fooddelivery-courier:latest|g' docker-compose.yml
-          
+          sed -i 's|build: ./CourierService|image: localhost:5000/fooddelivery-courier:latest|g' docker-compose.yml          
           docker-compose up -d
           sleep 30
           
-          # Проверяем, что ключевые сервисы запущены
           for service in auth-service user-service gateway-service; do
             if [ -z "$(docker ps -q -f name=$service)" ]; then
               echo "Error: $service container is not running"
@@ -117,7 +109,6 @@ jobs:
             fi
           done
           
-          # Проверяем доступность Gateway
           curl -f http://localhost:8080/actuator/health || {
             echo "Error: Gateway health endpoint not accessible"
             docker-compose logs gateway-service
@@ -125,5 +116,5 @@ jobs:
             exit 1
           }
           
-          echo "✅ Все тесты пройдены успешно!"
+          echo "Все тесты пройдены успешно!"
           docker-compose down --volumes
