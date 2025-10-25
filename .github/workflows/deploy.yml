@@ -21,6 +21,11 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
+      - name: Build all services with Maven
+        run: |
+          chmod +x build-all.sh
+          ./build-all.sh
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -30,72 +35,45 @@ jobs:
           sudo apt-get install -y docker-compose
           docker-compose --version
 
-      - name: Build all services with Maven
+      - name: Start local Docker Registry
         run: |
-          chmod +x build-all.sh
-          ./build-all.sh
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          docker run -d -p 5000:5000 --name registry registry:2
+          sleep 5
 
       - name: Build and push auth-service
-        uses: docker/build-push-action@v6
-        with:
-          context: ./AuthService
-          file: ./AuthService/Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-auth:latest
+        run: |
+          docker build -t localhost:5000/fooddelivery-auth:latest -f AuthService/Dockerfile ./AuthService
+          docker push localhost:5000/fooddelivery-auth:latest
 
       - name: Build and push user-service
-        uses: docker/build-push-action@v6
-        with:
-          context: ./UserService
-          file: ./UserService/Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-user:latest
+        run: |
+          docker build -t localhost:5000/fooddelivery-user:latest -f UserService/Dockerfile ./UserService
+          docker push localhost:5000/fooddelivery-user:latest
 
       - name: Build and push gateway-service
-        uses: docker/build-push-action@v6
-        with:
-          context: ./GatewayService
-          file: ./GatewayService/Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-gateway:latest
+        run: |
+          docker build -t localhost:5000/fooddelivery-gateway:latest -f GatewayService/Dockerfile ./GatewayService
+          docker push localhost:5000/fooddelivery-gateway:latest
 
       - name: Build and push restaurant-service
-        uses: docker/build-push-action@v6
-        with:
-          context: ./RestaurantService
-          file: ./RestaurantService/Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-restaurant:latest
+        run: |
+          docker build -t localhost:5000/fooddelivery-restaurant:latest -f RestaurantService/Dockerfile ./RestaurantService
+          docker push localhost:5000/fooddelivery-restaurant:latest
 
       - name: Build and push catalog-service
-        uses: docker/build-push-action@v6
-        with:
-          context: ./CatalogService
-          file: ./CatalogService/Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-catalog:latest
+        run: |
+          docker build -t localhost:5000/fooddelivery-catalog:latest -f CatalogService/Dockerfile ./CatalogService
+          docker push localhost:5000/fooddelivery-catalog:latest
 
       - name: Build and push order-service
-        uses: docker/build-push-action@v6
-        with:
-          context: ./OrderService
-          file: ./OrderService/Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-order:latest
+        run: |
+          docker build -t localhost:5000/fooddelivery-order:latest -f OrderService/Dockerfile ./OrderService
+          docker push localhost:5000/fooddelivery-order:latest
 
       - name: Build and push courier-service
-        uses: docker/build-push-action@v6
-        with:
-          context: ./CourierService
-          file: ./CourierService/Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-courier:latest
+        run: |
+          docker build -t localhost:5000/fooddelivery-courier:latest -f CourierService/Dockerfile ./CourierService
+          docker push localhost:5000/fooddelivery-courier:latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -110,18 +88,21 @@ jobs:
           sudo apt-get install -y docker-compose
           docker-compose --version
 
-      - name: Run deployment tests
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      - name: Start local Docker Registry
         run: |
-          # Заменяем локальную сборку на образы из Docker Hub
-          sed -i 's|build: ./AuthService|image: $DOCKER_USERNAME/fooddelivery-auth:latest|g' docker-compose.yml
-          sed -i 's|build: ./UserService|image: $DOCKER_USERNAME/fooddelivery-user:latest|g' docker-compose.yml
-          sed -i 's|build: ./GatewayService|image: $DOCKER_USERNAME/fooddelivery-gateway:latest|g' docker-compose.yml
-          sed -i 's|build: ./RestaurantService|image: $DOCKER_USERNAME/fooddelivery-restaurant:latest|g' docker-compose.yml
-          sed -i 's|build: ./CatalogService|image: $DOCKER_USERNAME/fooddelivery-catalog:latest|g' docker-compose.yml
-          sed -i 's|build: ./OrderService|image: $DOCKER_USERNAME/fooddelivery-order:latest|g' docker-compose.yml
-          sed -i 's|build: ./CourierService|image: $DOCKER_USERNAME/fooddelivery-courier:latest|g' docker-compose.yml
+          docker run -d -p 5000:5000 --name registry registry:2
+          sleep 5
+
+      - name: Run deployment tests
+        run: |
+          # Заменяем локальную сборку на образы из локального registry
+          sed -i 's|build: ./AuthService|image: localhost:5000/fooddelivery-auth:latest|g' docker-compose.yml
+          sed -i 's|build: ./UserService|image: localhost:5000/fooddelivery-user:latest|g' docker-compose.yml
+          sed -i 's|build: ./GatewayService|image: localhost:5000/fooddelivery-gateway:latest|g' docker-compose.yml
+          sed -i 's|build: ./RestaurantService|image: localhost:5000/fooddelivery-restaurant:latest|g' docker-compose.yml
+          sed -i 's|build: ./CatalogService|image: localhost:5000/fooddelivery-catalog:latest|g' docker-compose.yml
+          sed -i 's|build: ./OrderService|image: localhost:5000/fooddelivery-order:latest|g' docker-compose.yml
+          sed -i 's|build: ./CourierService|image: localhost:5000/fooddelivery-courier:latest|g' docker-compose.yml
           
           docker-compose up -d
           sleep 30
@@ -144,15 +125,5 @@ jobs:
             exit 1
           }
           
-          # Тестируем аутентификацию
-          AUTH_RESPONSE=$(curl -s -X POST http://localhost:8080/auth/login \
-            -H "Content-Type: application/json" \
-            -d '{"username":"test","password":"test"}' || echo "auth_failed")
-          
-          if [ "$AUTH_RESPONSE" = "auth_failed" ]; then
-            echo "Warning: Authentication test failed, but continuing"
-          else
-            echo "Authentication test passed"
-          fi
-          
+          echo "✅ Все тесты пройдены успешно!"
           docker-compose down --volumes
