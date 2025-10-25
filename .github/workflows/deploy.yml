@@ -44,7 +44,7 @@ jobs:
       - name: Build and push auth-service
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./AuthService
           file: ./AuthService/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-auth:latest
@@ -52,7 +52,7 @@ jobs:
       - name: Build and push user-service
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./UserService
           file: ./UserService/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-user:latest
@@ -60,7 +60,7 @@ jobs:
       - name: Build and push gateway-service
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./GatewayService
           file: ./GatewayService/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-gateway:latest
@@ -68,7 +68,7 @@ jobs:
       - name: Build and push restaurant-service
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./RestaurantService
           file: ./RestaurantService/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-restaurant:latest
@@ -76,7 +76,7 @@ jobs:
       - name: Build and push catalog-service
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./CatalogService
           file: ./CatalogService/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-catalog:latest
@@ -84,7 +84,7 @@ jobs:
       - name: Build and push order-service
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./OrderService
           file: ./OrderService/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-order:latest
@@ -92,7 +92,7 @@ jobs:
       - name: Build and push courier-service
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./CourierService
           file: ./CourierService/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-courier:latest
