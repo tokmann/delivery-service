@@ -14,6 +14,13 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up Java and Maven
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -37,7 +44,7 @@ jobs:
       - name: Build and push auth-service
         uses: docker/build-push-action@v6
         with:
-          context: ./AuthService
+          context: .
           file: ./AuthService/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-auth:latest
@@ -45,7 +52,7 @@ jobs:
       - name: Build and push user-service
         uses: docker/build-push-action@v6
         with:
-          context: ./UserService
+          context: .
           file: ./UserService/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-user:latest
@@ -53,7 +60,7 @@ jobs:
       - name: Build and push gateway-service
         uses: docker/build-push-action@v6
         with:
-          context: ./GatewayService
+          context: .
           file: ./GatewayService/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-gateway:latest
@@ -61,7 +68,7 @@ jobs:
       - name: Build and push restaurant-service
         uses: docker/build-push-action@v6
         with:
-          context: ./RestaurantService
+          context: .
           file: ./RestaurantService/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-restaurant:latest
@@ -69,7 +76,7 @@ jobs:
       - name: Build and push catalog-service
         uses: docker/build-push-action@v6
         with:
-          context: ./CatalogService
+          context: .
           file: ./CatalogService/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-catalog:latest
@@ -77,7 +84,7 @@ jobs:
       - name: Build and push order-service
         uses: docker/build-push-action@v6
         with:
-          context: ./OrderService
+          context: .
           file: ./OrderService/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-order:latest
@@ -85,7 +92,7 @@ jobs:
       - name: Build and push courier-service
         uses: docker/build-push-action@v6
         with:
-          context: ./CourierService
+          context: .
           file: ./CourierService/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-courier:latest
@@ -107,7 +114,16 @@ jobs:
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         run: |
-          docker-compose up -d --build
+          # Заменяем локальную сборку на образы из Docker Hub
+          sed -i 's|build: ./AuthService|image: $DOCKER_USERNAME/fooddelivery-auth:latest|g' docker-compose.yml
+          sed -i 's|build: ./UserService|image: $DOCKER_USERNAME/fooddelivery-user:latest|g' docker-compose.yml
+          sed -i 's|build: ./GatewayService|image: $DOCKER_USERNAME/fooddelivery-gateway:latest|g' docker-compose.yml
+          sed -i 's|build: ./RestaurantService|image: $DOCKER_USERNAME/fooddelivery-restaurant:latest|g' docker-compose.yml
+          sed -i 's|build: ./CatalogService|image: $DOCKER_USERNAME/fooddelivery-catalog:latest|g' docker-compose.yml
+          sed -i 's|build: ./OrderService|image: $DOCKER_USERNAME/fooddelivery-order:latest|g' docker-compose.yml
+          sed -i 's|build: ./CourierService|image: $DOCKER_USERNAME/fooddelivery-courier:latest|g' docker-compose.yml
+          
+          docker-compose up -d
           sleep 30
           
           # Проверяем, что ключевые сервисы запущены
