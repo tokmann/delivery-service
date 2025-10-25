@@ -1,0 +1,48 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway-service
+  cloud:
+    gateway:
+      routes:
+        # Маршрут к Auth Service
+        - id: auth-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - AuthFilter=true,timeoutSeconds=5
+
+        # Маршрут к User Service
+        - id: user-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - AuthFilter=true,timeoutSeconds=5
+
+        # Маршрут к будущим сервисам
+        - id: restaurant-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/restaurants/**
+          filters:
+            - AuthFilter=true
+
+        - id: order-service
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/orders/**
+          filters:
+            - AuthFilter=true
+
+# Конфигурация фильтра
+auth:
+  filter:
+    enabled: true
+    timeout-seconds: 5
+    public-endpoints:
+      - "/api/auth/**"
+      - "/actuator/**"

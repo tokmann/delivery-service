@@ -1,0 +1,33 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: auth-service
+          uri: http://auth-service:8081
+          predicates:
+            - Path=/api/auth/**
+
+
+        - id: user-service
+          uri: http://user-service:8082
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - AuthFilter
+
+
+        - id: restaurant-service
+          uri: http://restaurant-service:8083
+          predicates:
+            - Path=/api/management/restaurants/**
+          filters:
+            - AuthFilter
+
+        - id: catalog-service
+          uri: http://catalog-service:8084
+          predicates:
+            - Path=/api/catalog/**
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    com.delivery.gateway: DEBUG

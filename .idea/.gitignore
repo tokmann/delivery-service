@@ -1,0 +1,51 @@
+# Compiled class files
+*.class
+*.jar
+
+# Maven target directory
+target/
+**/target/
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+*.orig
+out/
+
+# Eclipse
+.settings/
+.project
+.classpath
+bin/
+
+# VS Code
+.vscode/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Package Files
+*.war
+*.ear
+*.zip
+
+# Env files
+.env
+*.env
+application-dev.properties

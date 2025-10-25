@@ -1,0 +1,97 @@
+openapi: 3.0.0
+info:
+  title: Catalog Service API
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8084
+
+paths:
+  # Публичные эндпоинты (без аутентификации)
+  /api/catalog/restaurants:
+    get:
+      summary: Получить список ресторанов
+      parameters:
+        - name: cuisine
+          in: query
+          schema: {type: string}
+        - name: search
+          in: query
+          schema: {type: string}
+      responses:
+        '200':
+          description:
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/Restaurant'}
+
+  /api/catalog/restaurants/{restaurantId}:
+    get:
+      summary: Получить информацию о ресторане
+      responses:
+        '200':
+          description:
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/RestaurantDetails'}
+
+  /api/catalog/restaurants/{restaurantId}/menu:
+    get:
+      summary: Получить меню ресторана
+      responses:
+        '200':
+          description:
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/MenuItem'}
+
+  # Внутренние эндпоинты для обновления данных
+  /api/internal/catalog/update:
+    post:
+      summary: Обновить данные каталога (из Management Service)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                restaurantId: {type: string}
+                action: {type: string, enum: [CREATE, UPDATE, DELETE]}
+      responses:
+        '200': {description: OK}
+
+components:
+  schemas:
+    Restaurant:
+      type: object
+      properties:
+        id: {type: string}
+        name: {type: string}
+        address: {type: string}
+        cuisineType: {type: string}
+        rating: {type: number}
+
+    RestaurantDetails:
+      type: object
+      properties:
+        id: {type: string}
+        name: {type: string}
+        address: {type: string}
+        phoneNumber: {type: string}
+        openingHours: {type: string}
+        cuisineType: {type: string}
+        rating: {type: number}
+
+    MenuItem:
+      type: object
+      properties:
+        id: {type: string}
+        name: {type: string}
+        description: {type: string}
+        price: {type: number}
+        category: {type: string}
+        isAvailable: {type: boolean}

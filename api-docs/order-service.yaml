@@ -1,0 +1,115 @@
+openapi: 3.0.0
+info:
+  title: Order Service API
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8085
+
+paths:
+  /api/orders:
+    post:
+      summary: Создать заказ
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema: {type: string}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                restaurantId: {type: string}
+                deliveryAddress: {type: string}
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      menuItemId: {type: string}
+                      quantity: {type: integer}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Order'}
+
+    get:
+      summary: Получить мои заказы
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema: {type: string}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/Order'}
+
+  /api/orders/{orderId}:
+    get:
+      summary: Получить детали заказа
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema: {type: string}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Order'}
+
+  /api/orders/{orderId}/status:
+    put:
+      summary: Обновить статус заказа (для ресторана/курьера)
+      parameters:
+        - name: X-User-Roles
+          in: header
+          required: true
+          schema: {type: string}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: {type: string, enum: [PREPARING, READY, IN_DELIVERY, DELIVERED, CANCELLED]}
+      responses:
+        '200': {description: OK}
+
+  # Внутренние эндпоинты
+  /api/internal/orders/{orderId}:
+    get:
+      summary: Получить заказ (для Delivery Service)
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Order'}
+
+components:
+  schemas:
+    Order:
+      type: object
+      properties:
+        id: {type: string}
+        userId: {type: string}
+        restaurantId: {type: string}
+        status: {type: string}
+        totalPrice: {type: number}
+        deliveryAddress: {type: string}
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              name: {type: string}
+              quantity: {type: integer}
+              price: {type: number}
+        createdAt: {type: string, format: date-time}

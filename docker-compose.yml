@@ -1,0 +1,246 @@
+version: '3.8'
+
+services:
+  # База для Auth Service
+  auth-db:
+    image: postgres:16
+    container_name: auth-db
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data
+    networks:
+      - food-delivery-net
+
+  # База для User Service
+  user-db:
+    image: postgres:16
+    container_name: user-db
+    environment:
+      POSTGRES_DB: user_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5433:5432"
+    volumes:
+      - user_db_data:/var/lib/postgresql/data
+    networks:
+      - food-delivery-net
+
+  # База для Restaurant Service
+  restaurant-db:
+    image: postgres:16
+    container_name: restaurant-db
+    environment:
+      POSTGRES_DB: restaurant_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5434:5432"
+    volumes:
+      - restaurant_db_data:/var/lib/postgresql/data
+    networks:
+      - food-delivery-net
+
+  # База для Catalog Service
+  catalog-db:
+    image: postgres:16
+    container_name: catalog-db
+    environment:
+      POSTGRES_DB: catalog_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5435:5432"
+    volumes:
+      - catalog_db_data:/var/lib/postgresql/data
+    networks:
+      - food-delivery-net
+
+
+  # База для Order Service
+  order-db:
+    image: postgres:16
+    container_name: order-db
+    environment:
+      POSTGRES_DB: order_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5436:5432"
+    volumes:
+      - order_db_data:/var/lib/postgresql/data
+    networks:
+      - food-delivery-net
+
+  # База для Courier Service
+  courier-db:
+    image: postgres:16
+    container_name: courier-db
+    environment:
+      POSTGRES_DB: courier_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5437:5432"
+    volumes:
+      - courier_db_data:/var/lib/postgresql/data
+    networks:
+      - food-delivery-net
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ./AuthService
+      dockerfile: Dockerfile
+    container_name: auth-service
+    depends_on:
+      - auth-db
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://auth-db:5432/auth_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    networks:
+      - food-delivery-net
+    restart: unless-stopped
+
+  # User Service
+  user-service:
+    build:
+      context: ./UserService
+      dockerfile: Dockerfile
+    container_name: user-service
+    depends_on:
+      - user-db
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://user-db:5432/user_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    networks:
+      - food-delivery-net
+    restart: unless-stopped
+
+  # Gateway Service
+  gateway-service:
+    build:
+      context: ./GatewayService
+      dockerfile: Dockerfile
+    container_name: gateway-service
+    depends_on:
+      - auth-service
+      - user-service
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - food-delivery-net
+    restart: unless-stopped
+
+  # Restaurant Service
+  restaurant-service:
+    build:
+      context: ./RestaurantService
+      dockerfile: Dockerfile
+    container_name: restaurant-service
+    depends_on:
+      - restaurant-db
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://restaurant-db:5432/restaurant_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    networks:
+      - food-delivery-net
+    restart: unless-stopped
+
+  # Catalog Service
+  catalog-service:
+    build:
+      context: ./CatalogService
+      dockerfile: Dockerfile
+    container_name: catalog-service
+    depends_on:
+      - catalog-db
+      - restaurant-service
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://catalog-db:5432/catalog_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    networks:
+      - food-delivery-net
+    restart: unless-stopped
+
+
+  # Order Service
+  order-service:
+    build:
+      context: ./OrderService
+      dockerfile: Dockerfile
+    container_name: order-service
+    depends_on:
+      - order-db
+      - restaurant-service
+      - catalog-service
+      - user-service
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://order-db:5432/order_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    networks:
+      - food-delivery-net
+    restart: unless-stopped
+
+
+  # Courier Service
+  courier-service:
+    build:
+      context: ./CourierService
+      dockerfile: Dockerfile
+    container_name: courier-service
+    depends_on:
+      - courier-db
+      - order-service
+      - user-service
+    ports:
+      - "8086:8086"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://courier-db:5432/courier_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    networks:
+      - food-delivery-net
+    restart: unless-stopped
+
+
+
+volumes:
+  auth_db_data:
+  user_db_data:
+  restaurant_db_data:
+  catalog_db_data:
+  order_db_data:
+  courier_db_data:
+
+networks:
+  food-delivery-net:
+    driver: bridge

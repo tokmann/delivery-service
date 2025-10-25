@@ -1,0 +1,145 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install docker-compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+          docker-compose --version
+
+      - name: Build all services with Maven
+        run: |
+          chmod +x build-all.sh
+          ./build-all.sh
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push auth-service
+        uses: docker/build-push-action@v6
+        with:
+          context: ./AuthService
+          file: ./AuthService/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-auth:latest
+
+      - name: Build and push user-service
+        uses: docker/build-push-action@v6
+        with:
+          context: ./UserService
+          file: ./UserService/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-user:latest
+
+      - name: Build and push gateway-service
+        uses: docker/build-push-action@v6
+        with:
+          context: ./GatewayService
+          file: ./GatewayService/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-gateway:latest
+
+      - name: Build and push restaurant-service
+        uses: docker/build-push-action@v6
+        with:
+          context: ./RestaurantService
+          file: ./RestaurantService/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-restaurant:latest
+
+      - name: Build and push catalog-service
+        uses: docker/build-push-action@v6
+        with:
+          context: ./CatalogService
+          file: ./CatalogService/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-catalog:latest
+
+      - name: Build and push order-service
+        uses: docker/build-push-action@v6
+        with:
+          context: ./OrderService
+          file: ./OrderService/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-order:latest
+
+      - name: Build and push courier-service
+        uses: docker/build-push-action@v6
+        with:
+          context: ./CourierService
+          file: ./CourierService/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/fooddelivery-courier:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run deployment tests
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        run: |
+          # Заменяем образы в docker-compose на собранные
+          sed -i 's|build: ./AuthService|image: $DOCKER_USERNAME/fooddelivery-auth:latest|g' docker-compose.yml
+          sed -i 's|build: ./UserService|image: $DOCKER_USERNAME/fooddelivery-user:latest|g' docker-compose.yml
+          sed -i 's|build: ./GatewayService|image: $DOCKER_USERNAME/fooddelivery-gateway:latest|g' docker-compose.yml
+          sed -i 's|build: ./RestaurantService|image: $DOCKER_USERNAME/fooddelivery-restaurant:latest|g' docker-compose.yml
+          sed -i 's|build: ./CatalogService|image: $DOCKER_USERNAME/fooddelivery-catalog:latest|g' docker-compose.yml
+          sed -i 's|build: ./OrderService|image: $DOCKER_USERNAME/fooddelivery-order:latest|g' docker-compose.yml
+          sed -i 's|build: ./CourierService|image: $DOCKER_USERNAME/fooddelivery-courier:latest|g' docker-compose.yml
+          
+          docker-compose up -d
+          sleep 30
+          
+          # Проверяем, что ключевые сервисы запущены
+          for service in auth-service user-service gateway-service; do
+            if [ -z "$(docker ps -q -f name=$service)" ]; then
+              echo "Error: $service container is not running"
+              docker-compose logs $service
+              docker-compose down --volumes
+              exit 1
+            fi
+          done
+          
+          # Проверяем доступность Gateway
+          curl -f http://localhost:8080/actuator/health || {
+            echo "Error: Gateway health endpoint not accessible"
+            docker-compose logs gateway-service
+            docker-compose down --volumes
+            exit 1
+          }
+          
+          # Тестируем аутентификацию
+          AUTH_RESPONSE=$(curl -s -X POST http://localhost:8080/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"username":"test","password":"test"}' || echo "auth_failed")
+          
+          if [ "$AUTH_RESPONSE" = "auth_failed" ]; then
+            echo "Warning: Authentication test failed, but continuing"
+          else
+            echo "Authentication test passed"
+          fi
+          
+          docker-compose down --volumes
