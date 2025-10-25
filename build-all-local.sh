@@ -1,8 +1,8 @@
 #!/bin/bash
 # === Скрипт сборки всех микросервисов ===
 
-# Базовая директория (текущая папка в CI/CD)
-BASE_DIR=$(pwd)
+# Базовая директория
+BASE_DIR=~/Desktop/DeliveryService
 
 # Список микросервисов
 SERVICES=(
@@ -16,14 +16,14 @@ SERVICES=(
 )
 
 echo "=== СБОРКА ВСЕХ МИКРОСЕРВИСОВ ==="
-echo "Текущая директория: $BASE_DIR"
+cd "$BASE_DIR" || { echo "ыПапка $BASE_DIR не найдена"; exit 1; }
 
 for SERVICE in "${SERVICES[@]}"; do
   SERVICE_DIR="$BASE_DIR/$SERVICE"
   if [ -d "$SERVICE_DIR" ]; then
     echo ""
     echo "Сборка сервиса: $SERVICE"
-    cd "$SERVICE_DIR" || { echo "Ошибка перехода в $SERVICE_DIR"; exit 1; }
+    cd "$SERVICE_DIR" || continue
     mvn clean package -DskipTests
     if [ $? -eq 0 ]; then
       echo "$SERVICE успешно собран"
@@ -31,10 +31,8 @@ for SERVICE in "${SERVICES[@]}"; do
       echo "Ошибка при сборке $SERVICE"
       exit 1
     fi
-    cd "$BASE_DIR"
   else
     echo "Папка $SERVICE_DIR не найдена, пропускаю"
-    exit 1
   fi
 done
 
