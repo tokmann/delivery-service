@@ -107,16 +107,7 @@ jobs:
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         run: |
-          # Заменяем образы в docker-compose на собранные
-          sed -i 's|build: ./AuthService|image: $DOCKER_USERNAME/fooddelivery-auth:latest|g' docker-compose.yml
-          sed -i 's|build: ./UserService|image: $DOCKER_USERNAME/fooddelivery-user:latest|g' docker-compose.yml
-          sed -i 's|build: ./GatewayService|image: $DOCKER_USERNAME/fooddelivery-gateway:latest|g' docker-compose.yml
-          sed -i 's|build: ./RestaurantService|image: $DOCKER_USERNAME/fooddelivery-restaurant:latest|g' docker-compose.yml
-          sed -i 's|build: ./CatalogService|image: $DOCKER_USERNAME/fooddelivery-catalog:latest|g' docker-compose.yml
-          sed -i 's|build: ./OrderService|image: $DOCKER_USERNAME/fooddelivery-order:latest|g' docker-compose.yml
-          sed -i 's|build: ./CourierService|image: $DOCKER_USERNAME/fooddelivery-courier:latest|g' docker-compose.yml
-          
-          docker-compose up -d
+          docker-compose up -d --build
           sleep 30
           
           # Проверяем, что ключевые сервисы запущены
