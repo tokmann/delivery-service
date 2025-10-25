@@ -96,7 +96,8 @@ jobs:
           grep -A 3 "auth-service:" docker-compose.yml
           
           docker-compose up -d
-          sleep 30
+          echo "Waiting for services to start..."
+          sleep 60
           
           for service in auth-service user-service gateway-service; do
             if [ -z "$(docker ps -q -f name=$service)" ]; then
