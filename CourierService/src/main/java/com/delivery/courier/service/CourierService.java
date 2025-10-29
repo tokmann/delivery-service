@@ -44,11 +44,11 @@ public class CourierService {
     }
 
     public List<DeliveryAssignment> getCourierAssignments(String courierId) {
-        return deliveryAssignmentRepository.findByCourierId(courierId);
+        return deliveryAssignmentRepository.findByCourier_Id(courierId);
     }
 
     public Optional<DeliveryAssignment> updateDeliveryStatus(String assignmentId, String courierId, String status) {
-        return deliveryAssignmentRepository.findByIdAndCourierId(assignmentId, courierId)
+        return deliveryAssignmentRepository.findByIdAndCourier_Id(assignmentId, courierId)
                 .map(assignment -> {
                     assignment.setStatus(status);
                     return deliveryAssignmentRepository.save(assignment);
@@ -71,5 +71,10 @@ public class CourierService {
 
                     return status;
                 });
+    }
+
+    public Courier addNewCourier(CreateCourierRequest request) {
+        Courier newCourier = new Courier(request.getName(), request.getPhoneNumber());
+        return courierRepository.save(newCourier);
     }
 }

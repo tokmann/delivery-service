@@ -1,10 +1,7 @@
 #!/bin/bash
-# === Скрипт сборки всех микросервисов ===
 
-# Базовая директория (текущая папка в CI/CD)
 BASE_DIR=$(pwd)
 
-# Список микросервисов
 SERVICES=(
   "AuthService"
   "CatalogService"

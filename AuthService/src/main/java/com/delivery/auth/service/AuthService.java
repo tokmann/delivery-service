@@ -1,13 +1,12 @@
 package com.delivery.auth.service;
 
 import com.delivery.auth.config.UserProfileClient;
-import com.delivery.auth.dto.AuthRequest;
-import com.delivery.auth.dto.AuthResponse;
-import com.delivery.auth.dto.RegisterRequest;
+import com.delivery.auth.dto.*;
 import com.delivery.auth.model.Role;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
-import com.delivery.auth.dto.TokenValidationResponse;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
 public class AuthService {
@@ -42,6 +41,18 @@ public class AuthService {
         var user = userService.registerUser(request.getLogin(), request.getPassword(), request.getEmail(), Role.RESTAURANT_MANAGER.name());
         return new AuthResponse(user.getId(), jwtService.generateToken(user.getId(), user.getLogin(), user.getRole()), user.getRole());
     }
+
+    public void registerCourier(String token, RegisterCourierRequest request) {
+        String caller = jwtService.getRolesFromToken(token);
+        if (!"ADMIN".equals(caller)) throw new AccessDeniedException("Only admin can create couriers");
+        WebClient webClient = WebClient.builder().baseUrl("http://localhost:8086/api/courier/internal/create-courier").build();
+        webClient.post()
+                .bodyValue(request)
+                .retrieve()
+                .toBodilessEntity()
+                .subscribe();
+    }
+
 
     public AuthResponse login(AuthRequest request) {
         var user = userService.authenticate(request.getLogin(), request.getPassword());

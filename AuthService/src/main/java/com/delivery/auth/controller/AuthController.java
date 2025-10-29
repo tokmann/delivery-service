@@ -1,12 +1,10 @@
 package com.delivery.auth.controller;
 
-import com.delivery.auth.dto.AuthRequest;
-import com.delivery.auth.dto.AuthResponse;
-import com.delivery.auth.dto.RegisterRequest;
-import com.delivery.auth.dto.TokenValidationResponse;
+import com.delivery.auth.dto.*;
 import com.delivery.auth.service.AuthService;
 import com.delivery.auth.service.UserService;
 import com.delivery.auth.service.JwtService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -42,6 +40,14 @@ public class AuthController {
             @RequestHeader("Authorization") String token,
             @RequestBody RegisterRequest request) {
         return ResponseEntity.ok(authService.registerManager(token, request));
+    }
+
+    @PostMapping("/register/courier")
+    public ResponseEntity<String> registerCourier(
+            @RequestHeader("Authorization") String token,
+            @RequestBody RegisterCourierRequest request) {
+        authService.registerCourier(token, request);
+        return ResponseEntity.ok("Courier is created: " + request.getName() + " " + request.getPhoneNumber());
     }
 
     @PostMapping("/login")

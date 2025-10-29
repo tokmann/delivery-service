@@ -57,4 +57,13 @@ public class CourierController {
         DeliveryAssignment assignment = courierService.assignOrder(orderId, request);
         return ResponseEntity.status(201).body(assignment);
     }
+
+    @PostMapping("/internal/create-courier")
+    public ResponseEntity<Courier> createCourier(
+            @RequestBody CreateCourierRequest request) {
+
+        Courier newCourier = courierService.addNewCourier(request);
+        return ResponseEntity.status(201).body(newCourier);
+    }
+
 }

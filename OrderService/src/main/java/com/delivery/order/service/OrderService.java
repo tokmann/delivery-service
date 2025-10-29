@@ -7,9 +7,15 @@ import com.delivery.order.repository.OrderRepository;
 import com.delivery.order.repository.OrderItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.web.reactive.function.client.WebClientAutoConfiguration;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -19,47 +25,41 @@ import java.util.stream.Collectors;
 @Service
 public class OrderService {
 
-    private final RestTemplate restTemplate;
+    private final WebClient webClient;
     private final OrderRepository orderRepository;
+    private final String catalogServiceUrl = "http://catalog-service:8084";
+    private final String courierServiceUrl = "http://courier-service:8086";
 
-    @Value("${services.catalog.url:http://localhost:8084}")
-    private String catalogServiceUrl;
-
-    @Value("${services.courier.url:http://localhost:8086}")
-    private String courierServiceUrl;
-
-    public OrderService(RestTemplate restTemplate, OrderRepository orderRepository) {
+    public OrderService(OrderRepository orderRepository) {
         this.orderRepository = orderRepository;
-        this.restTemplate = restTemplate;
+        this.webClient = WebClient.builder().build();
     }
 
     public Order createOrder(String userId, CreateOrderRequest request) {
-        ResponseEntity<CatalogRestaurantDTO> restaurantResponse = restTemplate.getForEntity(
-                catalogServiceUrl + "/api/catalog/restaurants/{restaurantId}",
-                CatalogRestaurantDTO.class,
-                request.getRestaurantId()
-        );
 
-        if (!restaurantResponse.getStatusCode().is2xxSuccessful() || restaurantResponse.getBody() == null) {
-            throw new RuntimeException("Ресторан не найден: " + request.getRestaurantId());
-        }
+        CatalogRestaurantDTO restaurant = webClient.get()
+                .uri(catalogServiceUrl + "/api/catalog/restaurants/{restaurantId}", request.getRestaurantId())
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError,
+                        response -> Mono.error(new RuntimeException("Ресторан не найден: " + request.getRestaurantId())))
+                .onStatus(HttpStatusCode::is5xxServerError,
+                        response -> Mono.error(new RuntimeException("Ошибка сервера каталога")))
+                .bodyToMono(CatalogRestaurantDTO.class)
+                .block();
 
-        CatalogRestaurantDTO restaurant = restaurantResponse.getBody();
-        if (!restaurant.isActive()) {
+        if (restaurant == null || !restaurant.isActive()) {
             throw new RuntimeException("Ресторан временно недоступен");
         }
 
-        ResponseEntity<CatalogMenuItemDTO[]> menuResponse = restTemplate.getForEntity(
-                catalogServiceUrl + "/api/catalog/restaurants/{restaurantId}/menu-items",
-                CatalogMenuItemDTO[].class,
-                request.getRestaurantId()
-        );
+        CatalogMenuItemDTO[] menuArray = webClient.get()
+                .uri(catalogServiceUrl + "/api/catalog/restaurants/{restaurantId}/menu-items", request.getRestaurantId())
+                .retrieve()
+                .onStatus(HttpStatusCode::isError,
+                        response -> Mono.error(new RuntimeException("Не удалось получить меню ресторана")))
+                .bodyToMono(CatalogMenuItemDTO[].class)
+                .block();
 
-        if (!menuResponse.getStatusCode().is2xxSuccessful() || menuResponse.getBody() == null) {
-            throw new RuntimeException("Не удалось получить меню ресторана");
-        }
-
-        List<CatalogMenuItemDTO> menuItems = List.of(menuResponse.getBody());
+        List<CatalogMenuItemDTO> menuItems = List.of(menuArray != null ? menuArray : new CatalogMenuItemDTO[0]);
 
         for (CreateOrderRequest.OrderItemRequest itemRequest : request.getItems()) {
             CatalogMenuItemDTO menuItem = menuItems.stream()
@@ -96,7 +96,6 @@ public class OrderService {
         }
 
         order.calculateTotalPrice();
-
         Order savedOrder = orderRepository.save(order);
 
         try {
@@ -105,13 +104,15 @@ public class OrderService {
                     savedOrder.getRestaurantAddress()
             );
 
-            restTemplate.postForEntity(
-                    courierServiceUrl + "/api/courier/internal/orders/{orderId}/assign",
-                    assignRequest,
-                    Void.class,
-                    savedOrder.getId()
-            );
+            webClient.post()
+                    .uri(courierServiceUrl + "/api/courier/internal/orders/{orderId}/assign", savedOrder.getId())
+                    .bodyValue(assignRequest)
+                    .retrieve()
+                    .toBodilessEntity()
+                    .block();
 
+        } catch (WebClientResponseException e) {
+            System.out.println("Ошибка при назначении курьера: " + e.getResponseBodyAsString());
         } catch (Exception e) {
             System.out.println("Не удалось назначить курьера: " + e.getMessage());
         }

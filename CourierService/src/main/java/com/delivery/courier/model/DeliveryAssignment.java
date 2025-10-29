@@ -31,7 +31,6 @@ public class DeliveryAssignment {
     private LocalDateTime pickedUpAt;
     private LocalDateTime deliveredAt;
     private LocalDateTime updatedAt;
-    private String courierId;
 
     // Конструкторы, геттеры, сеттеры
     public DeliveryAssignment() {}
@@ -81,11 +80,11 @@ public class DeliveryAssignment {
     public void setDeliveredAt(LocalDateTime deliveredAt) { this.deliveredAt = deliveredAt; }
 
     public String getCourierId() {
-        return courierId;
+        return courier.getId();
     }
 
     public void setCourierId(String courierId) {
-        this.courierId = courierId;
+        this.courier.setId(courierId);
     }
 
     // Дополнительные методы

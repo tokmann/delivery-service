@@ -9,7 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface DeliveryAssignmentRepository extends JpaRepository<DeliveryAssignment, String> {
-    Optional<DeliveryAssignment> findByIdAndCourierId(String id, String courierId);
+    Optional<DeliveryAssignment> findByIdAndCourier_Id(String id, String courierId);
     Optional<DeliveryAssignment> findByOrderId(String orderId);
-    List<DeliveryAssignment> findByCourierId(String courierId);
+    List<DeliveryAssignment> findByCourier_Id(String courierId);
 }

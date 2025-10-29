@@ -126,10 +126,7 @@ jobs:
           fi
           
           echo "ALL TESTS PASSED SUCCESSFULLY!"
-          echo "All services are running"
-          echo "Authentication is working" 
-          echo "JWT tokens are being generated"
-          
+        
           docker-compose down --volumes
 
       - name: Cleanup
