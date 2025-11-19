@@ -2,16 +2,9 @@ package com.delivery.auth.controller;
 
 import com.delivery.auth.dto.*;
 import com.delivery.auth.service.AuthService;
-import com.delivery.auth.service.UserService;
-import com.delivery.auth.service.JwtService;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.Map;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/api/auth")

@@ -12,7 +12,6 @@ SERVICES=(
   "UserService"
 )
 
-echo "=== СБОРКА ВСЕХ МИКРОСЕРВИСОВ ==="
 echo "Текущая директория: $BASE_DIR"
 
 for SERVICE in "${SERVICES[@]}"; do

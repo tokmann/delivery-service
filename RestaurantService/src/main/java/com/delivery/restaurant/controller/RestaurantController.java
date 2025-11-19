@@ -14,11 +14,9 @@ import java.util.List;
 public class RestaurantController {
 
     private final RestaurantService restaurantService;
-    private final MenuItemRepository menuItemRepository;
 
-    public RestaurantController(RestaurantService restaurantService, MenuItemRepository menuItemRepository) {
+    public RestaurantController(RestaurantService restaurantService) {
         this.restaurantService = restaurantService;
-        this.menuItemRepository = menuItemRepository;
     }
 
     // СОЗДАНИЕ РЕСТОРАНА (только ADMIN)

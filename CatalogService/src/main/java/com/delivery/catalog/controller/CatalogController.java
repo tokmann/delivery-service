@@ -2,8 +2,6 @@ package com.delivery.catalog.controller;
 
 import com.delivery.catalog.dto.CatalogMenuItemDTO;
 import com.delivery.catalog.dto.CatalogRestaurantDTO;
-import com.delivery.catalog.model.CatalogMenuItem;
-import com.delivery.catalog.model.CatalogRestaurant;
 import com.delivery.catalog.model.UpdateCatalogRequest;
 import com.delivery.catalog.service.CatalogService;
 import org.springframework.http.ResponseEntity;

@@ -39,15 +39,6 @@ public class CourierController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Для клиентов - отследить заказ
-    @GetMapping("/orders/{orderId}/track")
-    public ResponseEntity<DeliveryStatus> trackOrder(@PathVariable String orderId) {
-        Optional<DeliveryStatus> deliveryStatus = courierService.trackOrder(orderId);
-        return deliveryStatus
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
     // Внутренний эндпоинт - назначить заказ на доставку
     @PostMapping("/internal/orders/{orderId}/assign")
     public ResponseEntity<DeliveryAssignment> assignOrder(

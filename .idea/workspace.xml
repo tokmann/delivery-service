@@ -5,8 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c47e7c92-d7a8-4444-a0dd-c78bb23594c6" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.github/workflows/deploy.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/deploy.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AuthService/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/AuthService/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AuthService/src/main/java/com/delivery/auth/config/UserProfileClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/AuthService/src/main/java/com/delivery/auth/config/UserProfileClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CatalogService/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/CatalogService/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CourierService/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/CourierService/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GatewayService/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/GatewayService/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/OrderService/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/OrderService/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/RestaurantService/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/RestaurantService/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/UserService/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/UserService/Dockerfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build-all.sh" beforeDir="false" afterPath="$PROJECT_DIR$/build-all.sh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -62,7 +69,7 @@
     &quot;Spring Boot.AuthServiceApplication.executor&quot;: &quot;Run&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/rodya/Desktop/bpla-monitoring/backend&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/rodya/Desktop/ylab-courses/Task-1&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -181,6 +188,12 @@
       <workItem from="1761410171828" duration="9409000" />
       <workItem from="1761589515953" duration="5334000" />
       <workItem from="1761680118831" duration="1172000" />
+      <workItem from="1761720729204" duration="8192000" />
+      <workItem from="1762005696545" duration="707000" />
+      <workItem from="1762322592406" duration="8482000" />
+      <workItem from="1762345570231" duration="3703000" />
+      <workItem from="1762515114862" duration="659000" />
+      <workItem from="1762927447752" duration="3755000" />
     </task>
     <servers />
   </component>

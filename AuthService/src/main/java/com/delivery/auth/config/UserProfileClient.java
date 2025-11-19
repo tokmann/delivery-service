@@ -21,7 +21,7 @@ public class UserProfileClient {
                 .bodyValue(body)
                 .retrieve()
                 .toBodilessEntity()
-                .block(); // sync, иначе потеряется вызов
+                .block();
     }
 }
 
