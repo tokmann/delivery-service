@@ -1,88 +1,37 @@
 openapi: 3.0.0
 info:
-  title: Courier Service API
+  title: Courier Service
   version: 1.0.0
-
+  description: Микросервис курьеров
 servers:
   - url: http://localhost:8086
+    description: Courier Service
 
 paths:
-  # Для курьеров
   /api/courier/assignments:
     get:
-      summary: Получить мои задания (для курьера)
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema: {type: string}
+      summary: Задания курьера
+      headers: X-User-Id
       responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                type: array
-                items: {$ref: '#/components/schemas/DeliveryAssignment'}
-
+        '200': List[DeliveryAssignment]
   /api/courier/assignments/{assignmentId}/status:
     put:
       summary: Обновить статус доставки
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema: {type: string}
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                status: {type: string, enum: [PICKED_UP, ON_THE_WAY, DELIVERED]}
+      headers: X-User-Id
+      parameters: assignmentId
+      requestBody: UpdateDeliveryStatusRequest
       responses:
-        '200': {description: OK}
-
-  # Для клиентов
-  /api/courier/orders/{orderId}/track:
-    get:
-      summary: Отследить заказ
-      responses:
-        '200':
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/DeliveryStatus'}
-
-  # Внутренние эндпоинты
-  /api/internal/courier/orders/{orderId}/assign:
+        '200': DeliveryAssignment
+  /api/courier/internal/orders/{orderId}/assign:
     post:
-      summary: Назначить заказ на доставку (из Order Service)
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                orderId: {type: string}
-                deliveryAddress: {type: string}
-                restaurantAddress: {type: string}
+      summary: Назначить заказ курьеру
+      parameters: orderId
+      requestBody: AssignOrderRequest
       responses:
-        '201': {description: Created}
-
-components:
-  schemas:
-    DeliveryAssignment:
-      type: object
-      properties:
-        id: {type: string}
-        orderId: {type: string}
-        deliveryAddress: {type: string}
-        status: {type: string}
-        estimatedDeliveryTime: {type: string, format: date-time}
-
-    DeliveryStatus:
-      type: object
-      properties:
-        orderId: {type: string}
-        status: {type: string}
-        courierName: {type: string}
-        estimatedTime: {type: string, format: date-time}
+        '201': DeliveryAssignment
+  /api/courier/internal/create-courier:
+    post:
+      summary: Создать курьера
+      requestBody: CreateCourierRequest
+      responses:
+        '201': Courier

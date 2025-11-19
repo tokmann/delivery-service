@@ -1,165 +1,58 @@
 openapi: 3.0.0
 info:
-  title: Restaurant Management Service API
+  title: Restaurant Service
   version: 1.0.0
-
+  description: Микросервис ресторанов
 servers:
   - url: http://localhost:8083
+    description: Restaurant Service
 
 paths:
-  # Управление ресторанами
   /api/management/restaurants:
     post:
-      summary: Создать ресторан (только ADMIN)
-      parameters:
-        - name: X-User-Roles
-          in: header
-          required: true
-          schema: {type: string}
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name: {type: string}
-                address: {type: string}
-                cuisineType: {type: string}
-                managerId: {type: string}
+      summary: Создать ресторан
+      headers: X-User-Role
+      requestBody: CreateRestaurantRequest
       responses:
-        '201': {description: Created}
-
+        '201': Restaurant
     get:
-      summary: Получить мои рестораны (для MANAGER)
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema: {type: string}
+      summary: Мои рестораны
+      headers: X-User-Id
       responses:
-        '200':
-          description:
-          content:
-            application/json:
-              schema:
-                type: array
-                items: {$ref: '#/components/schemas/Restaurant'}
-
+        '200': List[Restaurant]
   /api/management/restaurants/{restaurantId}:
     put:
       summary: Обновить ресторан
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema: {type: string}
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name: {type: string}
-                address: {type: string}
+      headers: X-User-Id
+      parameters: restaurantId
+      requestBody: UpdateRestaurantRequest
       responses:
-        '200': {description: OK}
-
-  # Управление меню
+        '200': Restaurant
   /api/management/restaurants/{restaurantId}/menu-items:
     post:
-      summary: Добавить блюдо в меню
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema: {type: string}
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name: {type: string}
-                description: {type: string}
-                price: {type: number}
-                category: {type: string}
+      summary: Добавить блюдо
+      headers: X-User-Id
+      parameters: restaurantId
+      requestBody: CreateMenuItemRequest
       responses:
-        '201': {description: Created}
-
+        '201': MenuItem
     get:
-      summary: Получить меню ресторана
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema: {type: string}
+      summary: Получить меню
+      headers: X-User-Id
+      parameters: restaurantId
       responses:
-        '200':
-          description:
-          content:
-            application/json:
-              schema:
-                type: array
-                items: {$ref: '#/components/schemas/MenuItem'}
-
+        '200': List[MenuItem]
   /api/management/restaurants/{restaurantId}/menu-items/{itemId}:
     put:
       summary: Обновить блюдо
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema: {type: string}
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name: {type: string}
-                price: {type: number}
-                isAvailable: {type: boolean}
+      headers: X-User-Id
+      parameters: restaurantId, itemId
+      requestBody: UpdateMenuItemRequest
       responses:
-        '200': {description: OK}
-
+        '200': MenuItem
     delete:
-      summary: Удалить блюдо из меню
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema: {type: string}
+      summary: Удалить блюдо
+      headers: X-User-Id
+      parameters: restaurantId, itemId
       responses:
-        '200': {description: OK}
-
-  # Внутренний эндпоинт для Catalog Service
-  /api/internal/restaurants/{restaurantId}:
-    get:
-      summary: Получить данные ресторана (для Catalog Service)
-      responses:
-        '200':
-          description:
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/Restaurant'}
-
-components:
-  schemas:
-    Restaurant:
-      type: object
-      properties:
-        id: {type: string}
-        name: {type: string}
-        address: {type: string}
-        cuisineType: {type: string}
-        managerId: {type: string}
-
-    MenuItem:
-      type: object
-      properties:
-        id: {type: string}
-        name: {type: string}
-        description: {type: string}
-        price: {type: number}
-        category: {type: string}
-        isAvailable: {type: boolean}
+        '200': void

@@ -1,104 +1,40 @@
 openapi: 3.0.0
 info:
-  title: User Service API
+  title: User Service
   version: 1.0.0
-
+  description: Микросервис пользователей
 servers:
   - url: http://localhost:8082
+    description: User Service
 
 paths:
   /api/users/me:
     get:
-      summary: Получить мой профиль
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema: {type: string}
+      summary: Мой профиль
+      headers: X-User-Id
       responses:
-        '200':
-          description:
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id: {type: string}
-                  email: {type: string}
-                  firstName: {type: string}
-                  lastName: {type: string}
-
+        '200': UserProfile
     put:
       summary: Обновить профиль
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema: {type: string}
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                firstName: {type: string}
-                lastName: {type: string}
-                phoneNumber: {type: string}
+      headers: X-User-Id
+      requestBody: UpdateProfileRequest
       responses:
-        '200': {description: OK}
-
+        '200': UserProfile
   /api/users/me/addresses:
     get:
-      summary: Получить мои адреса
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema: {type: string}
+      summary: Мои адреса
+      headers: X-User-Id
       responses:
-        '200':
-          description:
-          content:
-            application/json:
-              schema:
-                type: array
-                items: {type: string}
-
+        '200': List[string]
     post:
       summary: Добавить адрес
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema: {type: string}
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                address: {type: string}
+      headers: X-User-Id
+      requestBody: AddAddressRequest
       responses:
-        '201': {description: Created}
-
-  /api/internal/users/{userId}:
-    get:
-      summary: Получить пользователя (для Order Service)
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema: {type: string}
+        '200': UserProfile
+  /api/users/create:
+    post:
+      summary: Создать профиль
+      requestBody: CreateUserRequest
       responses:
-        '200':
-          description:
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id: {type: string}
-                  email: {type: string}
-                  addresses:
-                    type: array
-                    items: {type: string}
+        '200': void

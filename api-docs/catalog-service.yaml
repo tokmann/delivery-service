@@ -1,97 +1,38 @@
 openapi: 3.0.0
 info:
-  title: Catalog Service API
+  title: Catalog Service
   version: 1.0.0
-
+  description: Микросервис каталога
 servers:
   - url: http://localhost:8084
+    description: Catalog Service
 
 paths:
-  # Публичные эндпоинты (без аутентификации)
+  /api/catalog/menu-items:
+    get:
+      summary: Все блюда
+      responses:
+        '200': List[CatalogMenuItemDTO]
   /api/catalog/restaurants:
     get:
-      summary: Получить список ресторанов
-      parameters:
-        - name: cuisine
-          in: query
-          schema: {type: string}
-        - name: search
-          in: query
-          schema: {type: string}
+      summary: Все рестораны
       responses:
-        '200':
-          description:
-          content:
-            application/json:
-              schema:
-                type: array
-                items: {$ref: '#/components/schemas/Restaurant'}
-
+        '200': List[CatalogRestaurantDTO]
   /api/catalog/restaurants/{restaurantId}:
     get:
-      summary: Получить информацию о ресторане
+      summary: Конкретный ресторан
+      parameters: restaurantId
       responses:
-        '200':
-          description:
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/RestaurantDetails'}
-
-  /api/catalog/restaurants/{restaurantId}/menu:
+        '200': CatalogRestaurantDTO
+  /api/catalog/restaurants/{restaurantId}/menu-items:
     get:
-      summary: Получить меню ресторана
+      summary: Меню ресторана
+      parameters: restaurantId
       responses:
-        '200':
-          description:
-          content:
-            application/json:
-              schema:
-                type: array
-                items: {$ref: '#/components/schemas/MenuItem'}
-
-  # Внутренние эндпоинты для обновления данных
-  /api/internal/catalog/update:
+        '200': List[CatalogMenuItemDTO]
+  /api/catalog/internal/sync:
     post:
-      summary: Обновить данные каталога (из Management Service)
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                restaurantId: {type: string}
-                action: {type: string, enum: [CREATE, UPDATE, DELETE]}
+      summary: Синхронизация каталога
+      requestBody: UpdateCatalogRequest
       responses:
-        '200': {description: OK}
-
-components:
-  schemas:
-    Restaurant:
-      type: object
-      properties:
-        id: {type: string}
-        name: {type: string}
-        address: {type: string}
-        cuisineType: {type: string}
-        rating: {type: number}
-
-    RestaurantDetails:
-      type: object
-      properties:
-        id: {type: string}
-        name: {type: string}
-        address: {type: string}
-        phoneNumber: {type: string}
-        openingHours: {type: string}
-        cuisineType: {type: string}
-        rating: {type: number}
-
-    MenuItem:
-      type: object
-      properties:
-        id: {type: string}
-        name: {type: string}
-        description: {type: string}
-        price: {type: number}
-        category: {type: string}
-        isAvailable: {type: boolean}
+        '200': void
